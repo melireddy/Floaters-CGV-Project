@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Car Minigame Puzzle</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div id="score">Press UP</div>
+
+<div id="controls">
+  <div id="buttons">
+    <button id="accelerate">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(0, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+    <button id="decelerate">
+      <svg width="30" height="30" viewBox="0 0 10 10">
+        <g transform="rotate(180, 5,5)">
+          <path d="M5,4 L7,6 L3,6 L5,4" />
+        </g>
+      </svg>
+    </button>
+  </div>
+  <div id="instructions">
+    Press UP to start. There's no stopping your vehicle. Avoid hitting other vehicles by accelerating
+    or decelerating with the UP and DOWN keys respectively. 
+    Score 16 exactly to unlock a clue.
+    
+  </div>
+</div>
+
+<div id="resultsf">
+  <div class="content">
+    <h1>You fail at everything</h1>
+    <p>Press R to make another futile attempt</p>
+  </div>
+</div>
+
+<div id="resultsp">
+  <div class="content">
+    <h1>I stand corrected</h1>
+    <p>Till next time, lucky number nine</p>
+  </div>
+</div>
+
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
