@@ -1,0 +1,449 @@
+<html>
+  <head>
+     <title>Maze With three.js</title>
+     <script src="three.min.js"></script>
+     <script> 
+         var playerInput = new Object();
+
+         const NORTH = 100;
+         const EAST = 101;
+         const WEST = 102;
+         const SOUTH = 103; 
+         // Check if a move is valid (Works for both the player and enemy AI)
+         function validMove(mazeGrid, x, y, direction){
+            if(direction == NORTH)
+            {
+               return !mazeGrid[x][y].northWall;
+            }
+            else if(direction == EAST)
+            {
+               return !mazeGrid[x][y].eastWall;
+            }
+            else if(direction == SOUTH)
+            {
+               return !mazeGrid[x][y].southWall;
+            }
+            else if(direction == WEST)
+            {
+               return !mazeGrid[x][y].westWall;
+            }
+            return false;
+         }
+         // Create Maze Grid function, we can place our walls here
+         //Randomly generated Maze Cell grid
+         //This is one of the most basic maze generating algorithms, we could try to implement a harder one instead
+         function createMazeGrid(width, height){
+            function MazeCell(northWall, eastWall, southWall, westWall){
+               this.northWall = northWall;
+               this.eastWall = eastWall;
+               this.southWall = southWall;
+               this.westWall = westWall;
+            }
+
+            var mazeGrid = Array(height);
+
+            for( var i = 0; i<height; i++){
+               var row = Array(width);
+               for(var j = 0; j<width; j++){
+                  row[j] = new MazeCell(true,true,true,true);
+               }
+               mazeGrid[i] = row;
+            }
+
+            for( var i = 0; i<height; i++){
+               for(var j = 0; j<width; j++){
+                  if(i>0 && j>0){ //If it is not an edge cell open a passage randomly
+                     if(Math.random()>0.5){
+                        mazeGrid[i][j].northWall=false;
+                        mazeGrid[i-1][j].southWall=false;
+                     }
+                     else{
+                        mazeGrid[i][j].westWall=false;
+                        mazeGrid[i][j-1].eastWall=false;
+                     }
+                  }
+                  else if(j > 0){ //If it is along the north edge open a west passage
+                     mazeGrid[i][j].westWall=false;
+                     mazeGrid[i][j-1].eastWall=false;
+                  }
+                  else if(i > 0){ //If it is along the west edge open a north passage
+                     mazeGrid[i][j].northWall=false;
+                     mazeGrid[i-1][j].southWall=false;
+                  }
+               }
+            }
+
+            return mazeGrid;
+         }
+         /* Manual Maze Cell grid
+         function createMazeGrid(){
+            function MazeCell(northWall, eastWall, southWall, westWall){
+               this.northWall = northWall;
+               this.eastWall = eastWall;
+               this.southWall = southWall;
+               this.westWall = westWall;
+            }
+
+            var mazeGrid = [Array(3), Array(3), Array(3)];
+
+            mazeGrid[0][0] = new MazeCell(true, false, false, true);
+            mazeGrid[0][1] = new MazeCell(true, false, false, false);
+            mazeGrid[0][2] = new MazeCell(true, true, false, false);
+            mazeGrid[1][0] = new MazeCell(false, true, false, true);
+            mazeGrid[1][1] = new MazeCell(false,true,true,true);
+            mazeGrid[1][2] = new MazeCell(false,true,false,true);
+            mazeGrid[2][0] = new MazeCell(false,true,true,true);
+            mazeGrid[2][1] = new MazeCell(true,false,true,true);
+            mazeGrid[2][2] = new MazeCell(false,true,true,false);
+
+            return mazeGrid;
+         } */
+
+         //Wall placing function
+         function placeWallGraphics(scene, mazeGrid){
+            var wallGeometry = new THREE.PlaneGeometry( 1, 0.5 );
+            var wallMaterial = new THREE.MeshStandardMaterial( );
+            // Code that checks our entire Maze Grid then places walls where ever there is a true value for the maze.
+            mazeGrid.forEach(function(mazeRow, rowCount){
+               mazeRow.forEach(function(mazeCell, colCount){
+                  if(mazeCell.northWall)
+                  placeWall(colCount, rowCount, 'n');
+                  if(mazeCell.eastWall)
+                  placeWall(colCount, rowCount, 'e');
+                  if(mazeCell.southWall)
+                     placeWall(colCount, rowCount, 's');
+                  if(mazeCell.westWall)
+                     placeWall(colCount, rowCount, 'w');
+               });
+            });
+            // Places the walls in the 3d world.
+            function placeWall(x,y,direction){
+               var wall = new THREE.Mesh( wallGeometry, wallMaterial );
+               wall.position.z = y*1;
+               wall.position.x = x*1;
+               if(direction == 'n'){
+                  wall.position.z -= 0.5;
+               }
+               else if(direction == 'e'){
+                  wall.position.x += 0.5;
+                  wall.rotation.y = -Math.PI/2;
+               }
+               else if(direction == 's'){
+                  wall.position.z += 0.5;
+                  wall.rotation.y = Math.PI;
+               }
+               else if(direction == 'w'){
+                  wall.position.x -= 0.5;
+                  wall.rotation.y = Math.PI/2;
+               }
+               else{
+                  return false;
+               }
+
+               scene.add(wall);
+            }
+         }
+         // Collectables system
+         /*
+         Note: Collectables are currently being stored in a closure variable, meaning only the collectable object can see the variable.
+         If we were to try and expand this collectable system we might need to re-write the code to store some of the data in a global variable.
+         */
+         function createCollectiblesList(number, grid){
+
+         var collectables = [];
+
+         var width = grid[0].length;
+         var height = grid.length;
+
+         var totalCollectibles = number;
+         var collectablesCollected = 0;
+
+         for(var i=0; i < number; i++){
+            var x;
+            var y;
+            var unique = false;
+
+            while(!unique){
+               x = Math.floor(Math.random()*width);
+               y = Math.floor(Math.random()*height);
+               unique = true;
+               collectables.forEach(function(collectable){
+                  if(collectable.x == x && collectable.y == y){
+                     unique = false;
+                  }
+               });
+            }
+
+            collectables.push({
+               x:x, 
+               y:y, 
+               action:function(){
+                  collectablesCollected++;
+                  alert("You have picked up "+collectablesCollected+" out of "+totalCollectibles+" collectables");
+                  if(collectablesCollected == totalCollectibles){
+                     alert("Congratulations! You won the game! Refresh the page to play again.");
+                  }
+               }
+            });
+         }
+
+         return collectables;
+         }
+         // Place collectables in the 3D world
+         function placeCollectableGraphics(scene, collectables){
+            var collectableGeometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
+            var collectableMaterial = new THREE.MeshStandardMaterial( {color: 0x000088} );
+
+            collectables.forEach(function(collectable){
+               var collectableObject = new THREE.Mesh(collectableGeometry, collectableMaterial);
+               collectableObject.position.z = collectable.x;
+               collectableObject.position.x = collectable.y;
+               scene.add(collectableObject);
+            });
+         }
+         // Collectable pick up after player interacts with object
+         function processCollectableCollisions(x, y,collectables,scene){
+            collectables.forEach(function(collectable,index){
+               if(collectable.x == x && collectable.y == y){
+                  collectable.action(); //Run the object's event
+                  scene.remove(collectable.objectRef); //Should remove graphics from screen, currently not working!
+                  collectables.splice(index,1); //Remove collectable from list
+               }
+            });
+         }
+         // Arrow keys tracking function
+         // Key press down
+         function doKeyDown(event){
+            var keynum;
+
+            if(window.event){ //Browser is IE
+               keynum = event.keyCode;
+            }
+            else{
+               keynum = event.which;
+            }
+
+            if(keynum == 37){
+               playerInput.left = 1;
+            }
+            else if(keynum == 38){
+               playerInput.up = 1;
+            }
+            else if(keynum == 39){
+               playerInput.right = 1;
+            }
+            else if(keynum == 40){
+               playerInput.down = 1;
+            }
+         }
+         //Key release
+         function doKeyUp(event){
+            var keynum;
+            
+            if(window.event){ //Browser is IE
+               keynum = event.keyCode;
+            }
+            else{
+               keynum = event.which;
+            }
+
+            if(keynum == 37){
+               playerInput.left = 0;
+            }
+            else if(keynum == 38){
+               playerInput.up = 0;
+            }
+            else if(keynum == 39){
+               playerInput.right = 0;
+            }
+            else if(keynum == 40){
+               playerInput.down = 0;
+            }
+         }
+         //Main function
+        function runMaze()
+        {
+         var mazeCanvas = document.getElementById("mazeCanvas");
+         var scene = new THREE.Scene();
+         var renderer = new THREE.WebGLRenderer({ canvas: mazeCanvas });
+         var camera = new THREE.PerspectiveCamera( 75, mazeCanvas.width/mazeCanvas.height, 0.1, 1000 ); // (Field of view, Aspect Ratio, Near plane of view, Far plane of view)
+         //Lights
+         var playerPointLight = new THREE.PointLight();
+         playerPointLight.position.set( 0, 0, 0 );
+         scene.add( playerPointLight );
+         // Grid of our maze to more easily place walls in the Labyrinth
+         var mazeGrid = createMazeGrid(10,10); //Size of maze is currently set to 10x10
+         // Code for placing the walls around our maze
+         placeWallGraphics(scene, mazeGrid);  
+         // Collectables
+         var collectables = createCollectiblesList(5, mazeGrid); //5 collectables being generated
+         placeCollectableGraphics(scene, collectables);
+
+         // Movements are based on time instead of FPS
+         var last_update = Date.now();
+         // Dungeon crawler like forward movements
+         const NORTH = 100;
+         const EAST = 101;
+         const WEST = 102;
+         const SOUTH = 103;
+         const MOVING_FORWARD = 4;
+
+         var direction = NORTH;
+         var walkDistance = 0;
+         var startX = 0;
+         var startZ = 0;
+         // Player location data, player starts at [0,0] and faces North.
+         var player = {};
+         player.gridX = 0;
+         player.gridY = 0;
+         player.direction = NORTH;
+
+         // Dungeon crawler like rotational movements (Player inputs left/right and the camera turns 90 degrees in that direction)
+         const WAITING = 1;
+         const TURNING_RIGHT = 2;
+         const TURNING_LEFT = 3;
+
+         var state = WAITING;
+         var currentDirection = 0;
+         var turningArc = 0;
+         //Rendering
+         var render = function () {
+            requestAnimationFrame( render );
+            // Time based movement
+            var now = Date.now();
+
+            var deltaTime = now - last_update;
+            last_update = now;
+            // Rotating movement
+            if(state == WAITING){
+               // left key
+               if(playerInput.left){
+                  state = TURNING_LEFT;
+                  switch(direction){
+                     case NORTH:
+                        direction = WEST;
+                        break;
+                     case EAST:
+                        direction = NORTH;
+                        break;
+                     case SOUTH:
+                        direction = EAST;
+                        break;
+                     case WEST:
+                        direction = SOUTH;
+                        break;
+                  }
+                  player.direction = direction;
+               }
+               // Right key
+               else if(playerInput.right){
+                  state = TURNING_RIGHT;
+                  switch(direction){
+                     case NORTH:
+                        direction = EAST;
+                        break;
+                     case EAST:
+                        direction = SOUTH;
+                        break;
+                     case SOUTH:
+                        direction = WEST;
+                        break;
+                     case WEST:
+                        direction = NORTH;
+                        break;
+                  }
+                  player.direction = direction;
+               }
+               // Up key
+               else if(playerInput.up && validMove(mazeGrid, player.gridX, player.gridY, player.direction)){
+                  walkingDistance = 0;
+                  startX = camera.position.x;
+                  startZ = camera.position.z;
+                  state = MOVING_FORWARD;
+                  switch(direction){  // X-axis is North/South, Y-axis is West/East based on how the original maze was constructed
+                     case NORTH:
+                        player.gridX--;
+                        break;
+                     case EAST:
+                        player.gridY++;
+                        break;
+                     case SOUTH:
+                        player.gridX++;
+                        break;
+                     case WEST:
+                        player.gridY--;
+                        break;
+                  }
+               }
+            }
+            //Turning left
+            if(state == TURNING_LEFT){
+               turningArc += Math.PI/2 * deltaTime/300; //Rotation speed, currently set to 0.3s
+               if(turningArc >= Math.PI/2){
+                  turningArc = Math.PI/2;
+                  currentDirection = currentDirection + turningArc;
+                  turningArc = 0;
+                  state = WAITING;
+               }
+               
+               camera.rotation.y = currentDirection + turningArc;
+            }
+            //Turning right
+            if(state == TURNING_RIGHT){
+               turningArc += Math.PI/2 * deltaTime/300; //Rotation speed, currently set to 0.3s
+               if(turningArc >= Math.PI/2){
+                  turningArc = Math.PI/2;
+                  currentDirection = currentDirection - turningArc;
+                  turningArc = 0;
+                  state = WAITING;
+               }
+
+               camera.rotation.y = currentDirection - turningArc;
+            }
+            //Move forward
+            if(state == MOVING_FORWARD)
+            {
+               walkingDistance += 1 * deltaTime/300; //Walking speed, currently set to 0.3s
+
+               if(walkingDistance >= 1){
+                  walkingDistance = 1;
+                  state = WAITING;
+                  processCollectableCollisions(player.gridX, player.gridY,collectables,scene);
+               }
+
+               switch(direction){
+                  case NORTH:
+                     camera.position.z = startZ - walkingDistance;
+                     break;
+                  case EAST:
+                     camera.position.x = startX + walkingDistance;
+                     break;
+                  case SOUTH:
+                     camera.position.z = startZ + walkingDistance;
+                     break;
+                  case WEST:
+                     camera.position.x = startX - walkingDistance;
+                     break;
+               }
+               playerPointLight.position.x = camera.position.x;
+               playerPointLight.position.y = camera.position.y;
+               playerPointLight.position.z = camera.position.z;
+            }   
+            /* Should be code to sping the collectable cube
+            Currently not working, the rotation property is being seen as "undefined"
+            collectables.forEach(function(collectable){
+               var collectableObject = collectable.objectRef;
+               collectableObject.rotation.x += 2 * deltaTime/1000;
+               collectableObject.rotation.y += 2 * deltaTime/1000;
+            });  */   
+            renderer.render(scene, camera);
+         };
+         render();
+        }
+     </script>
+  </head>
+  <body>
+   <body onload="runMaze();" onkeydown="doKeyDown(event);" onkeyup="doKeyUp(event);">
+     <canvas id="mazeCanvas" width=600 height=450 />
+  </body>
+</html>
