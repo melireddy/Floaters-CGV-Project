@@ -1,0 +1,1 @@
+This code is mostly just a GLTFLoader, which if we can figure out how to properly incorporate this into your main project we can load objects from https://sketchfab.com/feed into our project and use those models
