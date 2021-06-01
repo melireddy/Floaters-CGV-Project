@@ -13,6 +13,7 @@ class MainScene extends Scene3D {
     this.score = 0
     this.life = 3
     this.no_stars = 0
+    this.truck1 = 0
   }
 
   preload() {
@@ -127,7 +128,7 @@ class MainScene extends Scene3D {
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-5',mass: 200, radius: 0.5, height: 2, depth: 1, x: -6, y: 10},
+      {name: 'obs-5',mass: 200, radius: 0.5, height: 8, depth: 1, x: -7, y: 10},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
@@ -430,8 +431,54 @@ class MainScene extends Scene3D {
     this.third.physics.add.existing(tree13)
     tree13.body.setCollisionFlags(2);
 
+// ************************************************************************************************************************************* //
+    // add car obstacle
+    // this.third.physics.debug?.enable();
+    
+    // Add blocking wall 1
+    this.third.physics.add.box(
+      { x: 2, y: 3, width: 1, depth: 5, height: 1, mass: 0 },
+      platformMaterial
+    );
+    // Add blocking wall 1
+    this.third.physics.add.box(
+      { x: 1, y:0, z:1.5, width: 1, depth: 4.6, height: 1, mass: 0 },
+      platformMaterial
+    );
 
+    // Create & add Cars
+    const car1 = new Car();
+    car1.scale.set(0.025,0.025,0.025);
+    car1.position.set(3.5,-0.25-1,0);
+    car1.rotation.x = -Math.PI/2;
+    this.third.scene.add(car1);
+    this.third.physics.add.existing(car1, {depth: 40, mass: 10, shape: 'mesh', width: 60, height: 30});
 
+    const car2 = new Car();
+    car2.scale.set(0.025,0.025,0.025);
+    car2.position.set(2,24-1,0);
+    car2.rotation.x = -Math.PI/2;
+    car2.rotation.z = -Math.PI;
+    this.third.scene.add(car2);
+    this.third.physics.add.existing(car2, {depth: 40, mass: 6, shape: 'mesh', width: 60, height: 30});
+    
+    // Create and add truck
+    const truck1 = new Truck();
+    truck1.position.set(7.75,11,0);
+    truck1.scale.set(0.02,0.02,0.02);
+    truck1.rotation.x = -Math.PI/2;
+    this.third.scene.add(truck1);
+    this.third.physics.add.existing(truck1, {depth: 40, mass: 7, shape: 'mesh', width: 60, height: 30});
+    this.truck1 = truck1;
+
+    // Create and add ramp
+    const ramp = new Ramp();
+    ramp.position.set(14.75,10.75,0);
+    ramp.scale.set(0.025,0.025,0.025);
+    this.third.scene.add(ramp);
+    this.third.physics.add.existing(ramp, {depth: 40, mass: 0, shape: 'mesh', width: 60, height: 30});
+// ************************************************************************************************************************************* //
+    
     
 
   
@@ -585,7 +632,40 @@ class MainScene extends Scene3D {
             }
           }
         }
-      })        
+      })     
+      
+      // vehicles have obstacle immunity
+      // check vehicle overlap with obstacle* to delete obstacle
+      car1.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })
+      car2.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })
+      truck1.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })         
 
 
     })
@@ -662,9 +742,9 @@ class MainScene extends Scene3D {
     
    
 
-    if (this.robot && this.robot.body) {
+    if (this.robot && this.robot.body && this.truck1) {
       //fall off platform
-      if(this.robot.position.y < -2){
+      if(this.robot.position.y < -2 || this.truck1.position.y < -2){
         this.third.physics.destroy(this.robot)
         this.robot.userData.dead = true
         this.robot.visible = false
