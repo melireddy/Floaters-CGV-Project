@@ -113,15 +113,15 @@ class MainScene extends Scene3D {
       ),
       // Staircase
       this.third.physics.add.box(
-        { name: 'platform-right3', x: 60, y:18, width: 1, depth: 5, mass: 0 },
+        { name: 'platform-right3', x: 60, y:18, width: 1, depth: 2, mass: 0 },
         platformMaterial
       ),
       this.third.physics.add.box(
-        { name: 'platform-right3', x: 61, y:19, width: 1, depth: 5, mass: 0 },
+        { name: 'platform-right3', x: 61, y:19, width: 1, depth: 2, mass: 0 },
         platformMaterial
       ),
       this.third.physics.add.box(
-        { name: 'platform-right3', x: 62, y:20, width: 1, depth: 5, mass: 0 },
+        { name: 'platform-right3', x: 62, y:20, width: 1, depth: 2, mass: 0 },
         platformMaterial
       ),
       
