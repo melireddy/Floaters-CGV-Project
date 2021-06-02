@@ -371,7 +371,7 @@ class MainScene extends Scene3D {
 
 // ************************************************************************************************************************************* //
     // add car obstacle
-    this.third.physics.debug?.enable();
+    // this.third.physics.debug?.enable();
 
     // add another platform
     this.third.physics.add.box(
