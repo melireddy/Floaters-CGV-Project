@@ -69,11 +69,11 @@ class MainScene extends Scene3D {
         platformMaterial
       ),
       this.third.physics.add.box(
-        { name: 'platform-left1', x: -9, y: 7, width: 10, depth: 5, mass: 0 },
+        { name: 'platform-left1', x: -11, y: 7, width: 10, depth: 5, mass: 0 },
         platformMaterial
       ),
       this.third.physics.add.box(
-        { name: 'platform-right2', x: 10, y: 10, width: 10, depth: 5, mass: 0 },
+        { name: 'platform-right2', x: 12, y: 10, width: 10, depth: 5, mass: 0 },
         platformMaterial
       ),
       this.third.physics.add.box(
@@ -103,15 +103,72 @@ class MainScene extends Scene3D {
       this.third.physics.add.box(
         { name: 'platform-right3', x: 75, y:3, width: 10, depth: 5, mass: 0 },
         platformMaterial
+      ),
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: -30, y:5, width: 10, depth: 5, mass: 0 },
+        platformMaterial
+      ),
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: -30, y:1, width: 10, depth: 5, mass: 0 },
+        platformMaterial
+      ),
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: 43, y:19, width: 3, depth: 5, mass: 0 },
+        platformMaterial
       )
 
     ]
+
+// ************************************************************************************************************************************* //
+    // add car obstacle
+    // this.third.physics.debug?.enable();
+
+    // add cars
+    const car1 = new Car();
+    car1.scale.set(0.025,0.025,0.025);
+    car1.position.set(2,16,0);
+    car1.rotation.x = -Math.PI/2;
+    // car1.rotation.z = Math.PI;
+    this.third.scene.add(car1);
+    this.third.physics.add.existing(car1, {depth: 40, mass: 5, shape: 'mesh', width: 60, height: 30, setFriction: (999,999,999)});
+    this.car1 = car1;
+
+    const car2 = new Car();
+    car2.scale.set(0.025,0.025,0.025);
+    car2.position.set(43,20,0);
+    car2.rotation.x = -Math.PI/2;
+    // car1.rotation.z = Math.PI;
+    this.third.scene.add(car2);
+    this.third.physics.add.existing(car2, {depth: 40, mass: 5, shape: 'mesh', width: 60, height: 30, setFriction: (999,999,999)});
+    this.car1 = car2;
+
+    // add wall
+    this.third.physics.add.box(
+      { name: 'platform-right3', x: -25.5, y:3, width: 1, depth: 5, height: 3.5, mass: 0 },
+      platformMaterial
+    )
+
+    // add ramps
+        // Create and add ramp
+        const ramp1 = new Ramp();
+        ramp1.position.set(-3,15,0);
+        ramp1.scale.set(0.025,0.025,0.025);
+
+        this.third.scene.add(ramp1);
+        this.third.physics.add.existing(ramp1, {depth: 40, mass: 0, shape: 'mesh', width: 60, height: 30});
+
+        const ramp2 = new Ramp();
+        ramp2.position.set(50,15,0);
+        ramp2.scale.set(0.025,0.035,0.025);
+
+        this.third.scene.add(ramp2);
+        this.third.physics.add.existing(ramp2, {depth: 40, mass: 0, shape: 'mesh', width: 60, height: 30});
 
     //add obstacles
     const obstacleMaterial = {standard : {color: 0xd6d6c2, metalness : 0.05 }} 
     const obstacles = [
     this.third.physics.add.cone(
-      {name: 'obs-1',mass: 200, radius: 0.5, height: 2, depth: 1, x: -7, y: 0},
+      {name: 'obs-1',mass: 200, radius: 0.5, height: 2, depth: 1, x: -9, y: 0},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
@@ -123,19 +180,19 @@ class MainScene extends Scene3D {
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-4',mass: 200, radius: 0.5, height: 2, depth: 1, x: 7, y: 6},
+      {name: 'obs-4',mass: 200, radius: 0.5, height: 5, depth: 1, x: 7, y: 6},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-5',mass: 200, radius: 0.5, height: 2, depth: 1, x: -6, y: 10},
+      {name: 'obs-5',mass: 200, radius: 0.5, height: 8, depth: 1, x: -8, y: 10},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-6',mass: 200, radius: 0.5, height: 2, depth: 1,x: 10, y: 10},
+      {name: 'obs-6',mass: 200, radius: 0.5, height: 2, depth: 1,x: 12, y: 10},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-7',mass: 200, radius: 0.5, height: 2, depth: 1,x: 7, y: 16},
+      {name: 'obs-7',mass: 200, radius: 1, height: 5, depth: 1,x: 7, y: 16},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
@@ -171,11 +228,11 @@ class MainScene extends Scene3D {
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-16',mass: 200, radius: 0.5, height: 2, depth: 1,x: 45, y: 16},
+      {name: 'obs-16',mass: 200, radius: 0.5, height: 7, depth: 1,x: 47, y: 16},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-17',mass: 200, radius: 0.5, height: 2, depth: 1,x: 43, y: 14},
+      {name: 'obs-17',mass: 200, radius: 0.5, height: 7, depth: 1,x: 41, y: 14},
      obstacleMaterial
     )
 
@@ -439,11 +496,11 @@ class MainScene extends Scene3D {
     const starShape = this.third.transform.fromSVGtoShape(svg)
     const starScale = 250
     const starPositions = [
+      { x: -14, y: 8.5 },
       { x: -12, y: 8.5 },
       { x: -10, y: 8.5 },
-      { x: -8, y: 8.5 },
       { x: -4, y: 0 },
-      { x: -2, y: 0 },
+      { x: -30, y: 2 },
       { x: -12, y: 0 },
       { x: -14, y: 0 },
       { x: 8, y: 0 },
@@ -452,7 +509,7 @@ class MainScene extends Scene3D {
       { x: 26, y: 22 },
       { x: 32, y: 20 },
       { x: 12, y: 5.5 },
-      { x: 14, y: 5.5 },
+      { x: 7, y: 18 },
       { x: 6, y: 11.5 },
       { x: 61, y: 7 },
       { x: 63, y: 9 },
@@ -584,7 +641,30 @@ class MainScene extends Scene3D {
             }
           }
         }
-      })        
+      })
+      
+      // vehicles have obstacle immunity
+      // check vehicle overlap with obstacle* to delete obstacle
+      car1.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })
+      car2.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })
 
 
   
