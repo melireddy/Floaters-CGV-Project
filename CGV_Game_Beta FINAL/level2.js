@@ -14,6 +14,8 @@ class MainScene extends Scene3D {
     this.score = 0
     this.life = 3
     this.no_stars = 0
+    this.truck1 = 0;
+    this.car1= 0;
   }
 
   preload() {
@@ -104,7 +106,25 @@ class MainScene extends Scene3D {
       this.third.physics.add.box(
         { name: 'platform-right3', x: 108, y:0, width: 10, depth: 5, mass: 0 },
         platformMaterial
-      )
+      ),
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: 40, y: 1, width: 1.5, depth: 1, height: 1, mass: 20 },
+        platformMaterial
+      ),
+      // Staircase
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: 60, y:18, width: 1, depth: 5, mass: 0 },
+        platformMaterial
+      ),
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: 61, y:19, width: 1, depth: 5, mass: 0 },
+        platformMaterial
+      ),
+      this.third.physics.add.box(
+        { name: 'platform-right3', x: 62, y:20, width: 1, depth: 5, mass: 0 },
+        platformMaterial
+      ),
+      
 
     ]
   //add rotating bar
@@ -142,11 +162,11 @@ class MainScene extends Scene3D {
     const obstacleMaterial = {standard : {color: 0xd6d6c2, metalness : 0.05 }} 
     const obstacles = [
     this.third.physics.add.cone(
-      {name: 'obs-1',mass: 200, radius: 0.5, height: 2, depth: 1, x: 63, y: 18},
+      {name: 'obs-1',mass: 200, radius: 0.5, height: 9.83, depth: 1, x: 63, y: 18},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
-      {name: 'obs-2',mass: 200, radius: 0.5, height: 2, depth: 1, x: 61, y: 18},
+      {name: 'obs-2',mass: 200, radius: 0.5, height: 6, depth: 1, x: 59, y: 18},
      obstacleMaterial
     ),
     this.third.physics.add.cone(
@@ -156,8 +176,15 @@ class MainScene extends Scene3D {
     this.third.physics.add.cone(
       {name: 'obs-4',mass: 200, radius: 0.5, height: 2, depth: 1, x: 24, y: 0},
      obstacleMaterial
+    ),
+    this.third.physics.add.cone(
+      {name: 'obs-5',mass: 200, radius: 0.5, height: 4, depth: 1, x: 20.7, y: 8},
+     obstacleMaterial
+    ),
+    this.third.physics.add.cone(
+      {name: 'obs-5',mass: 200, radius: 1.7, height: 5, depth: 1, x: 87, y: 12},
+     obstacleMaterial
     )
-
   ]
 
  
@@ -342,8 +369,43 @@ class MainScene extends Scene3D {
     this.third.physics.add.existing(tree13)
     tree13.body.setCollisionFlags(2);
 
+// ************************************************************************************************************************************* //
+    // add car obstacle
+    this.third.physics.debug?.enable();
 
+    // add another platform
+    this.third.physics.add.box(
+      { name: 'platform-additional1', x: 38,y: -2, width: 10, depth: 5, mass: 0 },
+      platformMaterial
+    );
 
+    // Create & add Cars & Trucks
+    const truck1 = new Truck();
+    truck1.scale.set(0.025,0.025,0.025);
+    truck1.position.set(40,0,0);
+    truck1.rotation.x = -Math.PI/2;
+    truck1.rotation.z = Math.PI;
+    this.third.scene.add(truck1);
+    this.third.physics.add.existing(truck1, {depth: 40, mass: 10, shape: 'mesh', width: 60, height: 30, setFriction: (999,999,999)});
+    this.truck1 = truck1;
+
+    const car1 = new Car();
+    car1.scale.set(0.025,0.025,0.025);
+    car1.position.set(72,23,0);
+    car1.rotation.x = -Math.PI/2;
+    car1.rotation.z = Math.PI;
+    this.third.scene.add(car1);
+    this.third.physics.add.existing(car1, {depth: 40, mass: 10, shape: 'mesh', width: 60, height: 30, setFriction: (999,999,999)});
+    this.car1 = car1;
+
+    const truck2 = new Truck();
+    truck2.scale.set(0.025,0.025,0.025);
+    truck2.position.set(77.5,18,0);
+    truck2.rotation.x = -Math.PI/2;
+    this.third.scene.add(truck2);
+    this.third.physics.add.existing(truck2, {depth: 40, mass: 10, shape: 'mesh', width: 60, height: 30, setFriction: (999,999,999)});
+
+    
     
 
   
@@ -364,7 +426,7 @@ class MainScene extends Scene3D {
       { x: 50, y: 15 },
       { x: 52, y: 17 },
       { x: 53, y: 18 },
-      { x: 62, y: 22 },
+      { x: 61.5, y: 16.5 },
       { x: 63, y: 22 },
       { x: 72, y: 23 },
       { x: 73, y: 24 },
@@ -374,7 +436,7 @@ class MainScene extends Scene3D {
       { x: 77, y: 17 },
       { x: 79, y: 17 },
       { x: 81, y: 17 },
-      { x: 83, y: 12 }
+      { x: 87, y: 12 }
 
     ]
     starPositions.forEach((pos, i) => {
@@ -505,7 +567,30 @@ class MainScene extends Scene3D {
             }
           }
         }
-      })        
+      }) 
+      
+      // vehicles have obstacle immunity
+      // check vehicle overlap with obstacle* to delete obstacle
+      car1.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })
+      truck2.body.on.collision((otherObject, event) => {
+        if (/obs/.test(otherObject.name)) {
+          if (!otherObject.userData.dead) {
+            otherObject.userData.dead = true
+            otherObject.visible = false
+            this.third.physics.destroy(otherObject)
+            // this.lifeText.setText(`lives: ${this.life}`)
+          }
+        }
+      })
 
 
     })
@@ -580,12 +665,12 @@ class MainScene extends Scene3D {
     
    
 
-    if (this.robot && this.robot.body) {
+    if (this.robot && this.robot.body && this.car1 && this.truck1) {
 
     
 
       //fall off platform
-      if(this.robot.position.y < -2){
+      if(this.robot.position.y < -2 || this.car1.position.y < -2 || this.truck1.position.y < -2){
         this.third.physics.destroy(this.robot)
         this.robot.userData.dead = true
         this.robot.visible = false
